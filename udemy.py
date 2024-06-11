@@ -69,8 +69,7 @@ def get_course_coupon(url):
         return ''
 
 def free_checkout(CHECKOUT, access_token, csrftoken, coupon, courseID, cookies, head):
-    payload = '{"shopping_cart":{"items":[{"buyableType":"course","buyableId":' + str(courseID) + ',"discountInfo":{"code":"' + coupon + '"},"purchasePrice":{"currency":"INR","currency_symbol":"","amount":0,"price_string":"Free"},"buyableContext":{"contentLocaleId":null}}]},"payment_info":{"payment_vendor":"Free","payment_method":"free-method"}}'
-
+    payload = '{"checkout_environment":"Marketplace","checkout_event":"Submit","shopping_info":{"items":[{"discountInfo":{"code":"' + coupon + '"},"price":{"amount":0,"currency":"USD"},"buyable":{"id":"' + str(courseID) + '","type":"course"}}],"is_cart":false},"payment_info":{"method_id":"0","payment_vendor":"Free","payment_method":"free-method"},"tax_info":{"tax_rate":0,"billing_location":{"country_code":"LK","secondary_location_info":null},"currency_code":"usd","transaction_items":[{"tax_included_amount":0,"tax_excluded_amount":0,"tax_amount":0,"udemy_txn_item_reference":"course-' + str(courseID) + '","quantity":1}],"tax_breakdown_type":"tax_inclusive"}}'
     r = requests.post(CHECKOUT, headers=head, data=payload, cookies=cookies, verify=False)
     return r.json()
 
@@ -99,6 +98,10 @@ def auto_add(list_st, cookies, access_token, csrftoken, head):
             try:
                 js = free_checkout(CHECKOUT, access_token, csrftoken, couponID, course_id, cookies, head)
 
+                if 'Invalid buyable id' in str(js):
+                    print(fr + ' Invalid buyable id. :( ')
+                    index += 1
+                    
                 try:
                     if js['status'] == 'succeeded':
                         print(fg + ' Successfully Enrolled To Course')
@@ -262,8 +265,6 @@ def main():
                     'authorization': 'Bearer ' + access_token,
                     'accept': 'application/json, text/plain, */*',
                     'x-requested-with': 'XMLHttpRequest',
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
-                    'x-forwarded-for': str(ip),
                     'x-udemy-authorization': 'Bearer ' + access_token,
                     'content-type': 'application/json;charset=UTF-8',
                     'referer': 'https://www.udemy.com/courses/search/?q=free%20courses&src=sac&kw=free',
@@ -282,8 +283,6 @@ def main():
                     'authorization': 'Bearer ' + access_token,
                     'accept': 'application/json, text/plain, */*',
                     'x-requested-with': 'XMLHttpRequest',
-                    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
-                    'x-forwarded-for': str(ip),
                     'x-udemy-authorization': 'Bearer ' + access_token,
                     'content-type': 'application/json;charset=UTF-8',
                     'origin': 'https://www.udemy.com',
